@@ -1,0 +1,6 @@
+# Supercronic crontab
+# ---------------------------------------------------------------------------
+# Daily at 02:00 UTC: restore a backup into a temp location and verify its
+# SQLite integrity, then send an e-mail summary (pass or fail).
+# ---------------------------------------------------------------------------
+0 2 * * * /app/scripts/check_backup.sh

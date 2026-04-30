@@ -1,0 +1,71 @@
+# fly.toml – denokv-on-the-fly
+# ---------------------------------------------------------------------------
+# Adjust `app` and `primary_region` to your own values before deploying.
+# ---------------------------------------------------------------------------
+
+app            = "denokv-on-the-fly"
+primary_region = "fra"
+
+[build]
+  dockerfile = "Dockerfile"
+
+# ---------------------------------------------------------------------------
+# Persistent volume – 1 GB, mounted at /data
+# ---------------------------------------------------------------------------
+[[mounts]]
+  source      = "denokv_data"
+  destination = "/data"
+  initial_size = "1gb"
+
+# ---------------------------------------------------------------------------
+# HTTP service – denokv KV-Connect endpoint
+# ---------------------------------------------------------------------------
+[[services]]
+  internal_port = 4512
+  protocol      = "tcp"
+
+  [[services.ports]]
+    port     = 443
+    handlers = ["tls", "http"]
+
+  [[services.ports]]
+    port     = 80
+    handlers = ["http"]
+
+  [services.http_checks]
+    interval      = "15s"
+    timeout       = "5s"
+    grace_period  = "30s"
+    method        = "GET"
+    path          = "/"
+    # denokv returns 400 on unauthenticated GET – that's fine, it's alive
+    restart_limit = 3
+
+# ---------------------------------------------------------------------------
+# VM – shared-cpu-1x with 256 MB is plenty for a single-tenant KV store.
+# Scale up to performance-1x if you need more throughput.
+# ---------------------------------------------------------------------------
+[vm]
+  size   = "shared-cpu-1x"
+  memory = "256mb"
+
+# ---------------------------------------------------------------------------
+# Environment – non-secret config
+# ---------------------------------------------------------------------------
+[env]
+  S3_PATH = "denokv/"           # prefix inside the bucket
+
+# ---------------------------------------------------------------------------
+# Secrets (set via `flyctl secrets set`, NOT stored in fly.toml)
+# ---------------------------------------------------------------------------
+# flyctl secrets set \
+#   DENO_KV_ACCESS_TOKEN="$(openssl rand -base64 32)" \
+#   LITESTREAM_ACCESS_KEY_ID="..." \
+#   LITESTREAM_SECRET_ACCESS_KEY="..." \
+#   S3_BUCKET="your-bucket-name" \
+#   SMTP_HOST="smtp.example.com" \
+#   SMTP_PORT="587" \
+#   SMTP_USER="user@example.com" \
+#   SMTP_PASSWORD="secret" \
+#   SMTP_FROM="denokv-alerts@example.com" \
+#   ALERT_EMAIL="ops@example.com"
