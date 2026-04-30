@@ -1,3 +1,12 @@
+# Stage 1: Build denokv from source
+FROM rust:1.80-slim-bookworm AS denokv-builder
+WORKDIR /usr/src/denokv
+RUN apt-get update && apt-get install -y git curl unzip
+ARG DENOKV_VERSION=0.13.0
+RUN git clone --depth 1 --branch ${DENOKV_VERSION} https://github.com/denoland/denokv.git .
+RUN cargo build --release --bin denokv
+
+# Stage 2: Final image
 FROM debian:bookworm-slim AS base
 
 # --------------------------------------------------------------------------- #
@@ -15,16 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         mailutils \
         && rm -rf /var/lib/apt/lists/*
 
-# --------------------------------------------------------------------------- #
-# denokv  – latest release binary for linux/amd64
-# --------------------------------------------------------------------------- #
-ARG DENOKV_VERSION=0.7.0
-RUN curl -fsSL \
-        "https://github.com/denoland/denokv/releases/download/${DENOKV_VERSION}/denokv-x86_64-unknown-linux-gnu.zip" \
-        -o /tmp/denokv.zip \
-    && unzip /tmp/denokv.zip -d /usr/local/bin/ \
-    && chmod +x /usr/local/bin/denokv \
-    && rm /tmp/denokv.zip
+# Copy denokv binary from builder
+COPY --from=denokv-builder /usr/src/denokv/target/release/denokv /usr/local/bin/denokv
 
 # --------------------------------------------------------------------------- #
 # Litestream – continuous SQLite replication
