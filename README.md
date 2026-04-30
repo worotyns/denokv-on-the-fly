@@ -92,7 +92,7 @@ This repository includes a drop-in capable library in `/lib/kv_queue.ts` that im
 ### 1. Create the Fly app and Volume
 
 ```bash
-flyctl apps create denokv-on-the-fly
+flyctl apps create your-denokv-on-the-fly-instance
 flyctl volumes create denokv_data --size 1
 ```
 

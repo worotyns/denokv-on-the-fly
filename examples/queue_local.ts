@@ -1,7 +1,7 @@
 // # Export these in your shell or CI environment
 // export DENO_KV_ACCESS_TOKEN="..." \
 // Same API you know — just point at your Fly hostname
-// Run: deno run --unstable-kv --unstable-cron -A tests/main.ts
+// Run: deno run --unstable-kv --unstable-cron -A examples/queue_local.ts
 const kv = await Deno.openKv("https://your-denokv-on-the-fly-instance.fly.dev");
 const kvLocal = await Deno.openKv(":memory:");
 
