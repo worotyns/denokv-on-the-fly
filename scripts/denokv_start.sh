@@ -13,7 +13,7 @@
 set -euo pipefail
 
 DB_PATH="/data/denokv.sqlite"
-ADDR="${DENOKV_ADDR:-0.0.0.0:4512}"
+ADDR="${DENOKV_ADDR:-127.0.0.1:4513}"
 MAX_WAIT=60   # seconds to wait for litestream to restore
 
 echo "[denokv_start] Waiting for database at ${DB_PATH}…"

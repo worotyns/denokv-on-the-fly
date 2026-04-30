@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         msmtp \
         msmtp-mta \
         mailutils \
+        && curl -fsSL https://deno.land/x/install/install.sh | sh \
+        && mv /root/.deno/bin/deno /usr/local/bin/deno \
         && rm -rf /var/lib/apt/lists/*
 
 # Copy denokv binary from builder
@@ -53,7 +55,8 @@ RUN mkdir -p \
         /tmp/backup-check \
         /etc/litestream \
         /var/log/supervisor \
-        /app/scripts
+        /app/scripts \
+        /app/lib
 
 # --------------------------------------------------------------------------- #
 # Configuration files (copied from build context)
@@ -63,6 +66,7 @@ COPY config/supervisord.conf     /etc/supervisor/conf.d/supervisord.conf
 COPY config/msmtprc              /etc/msmtprc
 COPY config/crontab              /app/crontab
 COPY scripts/                    /app/scripts/
+COPY lib/                        /app/lib/
 RUN chmod +x /app/scripts/*.sh
 
 # --------------------------------------------------------------------------- #

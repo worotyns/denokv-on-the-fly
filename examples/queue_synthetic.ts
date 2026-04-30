@@ -1,6 +1,6 @@
-import { KvQueue, KvQueueRunner } from "../lib/kv_queue.ts";
+import { KvQueue, KvQueueRunner } from "https://your-denokv-on-the-fly-instance.fly.dev/lib/kv_queue.ts";
 
-const kv = await Deno.openKv("https://denokv-on-the-fly.fly.dev");
+const kv = await Deno.openKv("https://your-denokv-on-the-fly-instance.fly.dev");
 
 const queue = new KvQueue(kv);
 

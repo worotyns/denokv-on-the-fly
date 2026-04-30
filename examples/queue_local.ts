@@ -2,7 +2,7 @@
 // export DENO_KV_ACCESS_TOKEN="..." \
 // Same API you know — just point at your Fly hostname
 // Run: deno run --unstable-kv --unstable-cron -A tests/main.ts
-const kv = await Deno.openKv("https://denokv-on-the-fly.fly.dev");
+const kv = await Deno.openKv("https://your-denokv-on-the-fly-instance.fly.dev");
 const kvLocal = await Deno.openKv(":memory:");
 
 console.log("Run app... (kv, cron, get, set)");
