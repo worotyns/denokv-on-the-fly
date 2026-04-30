@@ -32,14 +32,10 @@ primary_region = "fra"
     port     = 80
     handlers = ["http"]
 
-  [services.http_checks]
-    interval      = "15s"
-    timeout       = "5s"
-    grace_period  = "30s"
-    method        = "GET"
-    path          = "/"
-    # denokv returns 400 on unauthenticated GET – that's fine, it's alive
-    restart_limit = 3
+  [[services.tcp_checks]]
+    interval     = "15s"
+    timeout      = "2s"
+    grace_period = "10s"
 
 # ---------------------------------------------------------------------------
 # VM – shared-cpu-1x with 256 MB is plenty for a single-tenant KV store.
@@ -53,15 +49,17 @@ primary_region = "fra"
 # Environment – non-secret config
 # ---------------------------------------------------------------------------
 [env]
-  S3_PATH = "denokv/"           # prefix inside the bucket
+  S3_PATH     = "denokv/"                         # prefix inside the bucket
+  # Tigris (Fly built-in S3). Remove if using AWS S3 directly.
+  S3_ENDPOINT = "https://fly.storage.tigris.dev"
 
 # ---------------------------------------------------------------------------
 # Secrets (set via `flyctl secrets set`, NOT stored in fly.toml)
 # ---------------------------------------------------------------------------
 # flyctl secrets set \
 #   DENO_KV_ACCESS_TOKEN="$(openssl rand -base64 32)" \
-#   LITESTREAM_ACCESS_KEY_ID="..." \
-#   LITESTREAM_SECRET_ACCESS_KEY="..." \
+#   AWS_ACCESS_KEY_ID="..."              # auto-set by flyctl storage create (Tigris) \
+#   AWS_SECRET_ACCESS_KEY="..."          # auto-set by flyctl storage create (Tigris) \
 #   S3_BUCKET="your-bucket-name" \
 #   SMTP_HOST="smtp.example.com" \
 #   SMTP_PORT="587" \

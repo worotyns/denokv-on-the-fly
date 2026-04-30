@@ -1,14 +1,16 @@
 # /etc/litestream/litestream.yml
 # ---------------------------------------------------------------------------
 # Litestream continuously replicates the denokv SQLite file to an S3-
-# compatible bucket (e.g. AWS S3, Tigris, Backblaze B2, MinIO).
+# compatible bucket.
 #
-# Required environment variables (set as Fly secrets):
-#   LITESTREAM_ACCESS_KEY_ID        – S3 access key id
-#   LITESTREAM_SECRET_ACCESS_KEY    – S3 secret access key
-#   S3_BUCKET                       – bucket name
-#   S3_PATH                         – prefix path inside the bucket
-#   S3_ENDPOINT                     – (optional) custom endpoint for S3-compat
+# Credentials are read automatically from standard AWS env vars:
+#   AWS_ACCESS_KEY_ID        – set by `flyctl storage create` (Tigris) or manually
+#   AWS_SECRET_ACCESS_KEY    – set by `flyctl storage create` (Tigris) or manually
+#
+# Other required env vars (fly.toml [env] or secrets):
+#   S3_BUCKET      – bucket name  (secret: BUCKET_NAME from Tigris)
+#   S3_PATH        – prefix path  (fly.toml [env])
+#   S3_ENDPOINT    – custom endpoint for Tigris / B2 / MinIO (fly.toml [env])
 # ---------------------------------------------------------------------------
 
 dbs:
@@ -17,13 +19,10 @@ dbs:
       - type: s3
         bucket: ${S3_BUCKET}
         path: ${S3_PATH}
-        # Omit endpoint for AWS S3; set it for Tigris / B2 / MinIO:
-        # endpoint: ${S3_ENDPOINT}
-        access-key-id: ${LITESTREAM_ACCESS_KEY_ID}
-        secret-access-key: ${LITESTREAM_SECRET_ACCESS_KEY}
-        # Sync every second (default) – fine for denokv workloads
+        endpoint: ${S3_ENDPOINT}
+        # Credentials come from AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars.
+        # No need to set them here – Litestream reads them automatically.
         sync-interval: 1s
-        # Retain 7 days of snapshots for PITR
         retention: 168h
         retention-check-interval: 1h
         snapshot-interval: 6h

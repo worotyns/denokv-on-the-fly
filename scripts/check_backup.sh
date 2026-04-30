@@ -8,8 +8,8 @@
 #   3. Send an e-mail report (pass or fail) via msmtp
 #
 # Required env vars (Fly secrets):
-#   LITESTREAM_ACCESS_KEY_ID
-#   LITESTREAM_SECRET_ACCESS_KEY
+#   AWS_ACCESS_KEY_ID           – auto-set by flyctl storage create (Tigris)
+#   AWS_SECRET_ACCESS_KEY       – auto-set by flyctl storage create (Tigris)
 #   S3_BUCKET / S3_PATH
 #   SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASSWORD / SMTP_FROM
 #   ALERT_EMAIL   – recipient address for the report
@@ -30,8 +30,8 @@ echo "[check_backup] ${TIMESTAMP} – restoring replica for integrity check…"
 RESTORE_OK=true
 if ! litestream restore \
         -config "${LS_CONFIG}" \
-        -replica "s3" \
-        "${RESTORED_DB}" 2>&1; then
+        -o "${RESTORED_DB}" \
+        /data/denokv.sqlite 2>&1; then
   RESTORE_OK=false
 fi
 

@@ -127,11 +127,32 @@ flyctl volumes create denokv_data \
 
 ### 5. Set secrets
 
+**If you used `flyctl storage create` (Tigris):** it automatically injects `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `BUCKET_NAME` as secrets. You only need to map the bucket name and add SMTP + KV token:
+
+```bash
+# Get the bucket name Tigris created
+flyctl secrets list --app denokv-on-the-fly
+# Look for BUCKET_NAME in the output, then:
+
+flyctl secrets set \
+  DENO_KV_ACCESS_TOKEN="$(openssl rand -base64 32)" \
+  S3_BUCKET="<value-of-BUCKET_NAME>" \
+  SMTP_HOST="smtp.example.com" \
+  SMTP_PORT="587" \
+  SMTP_USER="alerts@example.com" \
+  SMTP_PASSWORD="<smtp-password>" \
+  SMTP_FROM="denokv-alerts@example.com" \
+  ALERT_EMAIL="ops@example.com" \
+  --app denokv-on-the-fly
+```
+
+**If you're using your own S3/B2/MinIO (not Tigris):** set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` manually:
+
 ```bash
 flyctl secrets set \
   DENO_KV_ACCESS_TOKEN="$(openssl rand -base64 32)" \
-  LITESTREAM_ACCESS_KEY_ID="<s3-access-key>" \
-  LITESTREAM_SECRET_ACCESS_KEY="<s3-secret-key>" \
+  AWS_ACCESS_KEY_ID="<s3-access-key>" \
+  AWS_SECRET_ACCESS_KEY="<s3-secret-key>" \
   S3_BUCKET="<your-bucket-name>" \
   SMTP_HOST="smtp.example.com" \
   SMTP_PORT="587" \
@@ -145,7 +166,10 @@ flyctl secrets set \
 > **SMTP notes:**
 > - Port `587` with STARTTLS is the default (most providers).
 > - For port `465` (implicit TLS), change `tls_starttls on` → `off` in `scripts/litestream_start.sh` before deploying.
-> - `S3_PATH` (the key prefix inside the bucket) defaults to `denokv/` and is set in `fly.toml [env]`.
+
+> **S3_PATH** and **S3_ENDPOINT** are set in `fly.toml [env]` (not secrets):
+> - `S3_PATH = "denokv/"` — key prefix inside the bucket
+> - `S3_ENDPOINT = "https://fly.storage.tigris.dev"` — remove this line if using AWS S3 directly
 
 ### 6. Deploy
 
@@ -258,18 +282,18 @@ flyctl volumes extend <volume-id> --size 5 --app denokv-on-the-fly
 | Variable | Set in | Description |
 |---|---|---|
 | `DENO_KV_ACCESS_TOKEN` | Fly secret | Bearer token for KV-Connect clients |
-| `LITESTREAM_ACCESS_KEY_ID` | Fly secret | S3 access key for Litestream replication |
-| `LITESTREAM_SECRET_ACCESS_KEY` | Fly secret | S3 secret key |
-| `S3_BUCKET` | Fly secret | S3 bucket name |
-| `S3_PATH` | `fly.toml [env]` | Key prefix inside the bucket (`denokv/`) |
-| `S3_ENDPOINT` | Fly secret *(optional)* | Custom S3-compatible endpoint URL |
+| `AWS_ACCESS_KEY_ID` | Fly secret | S3 access key — auto-set by `flyctl storage create` (Tigris) |
+| `AWS_SECRET_ACCESS_KEY` | Fly secret | S3 secret key — auto-set by `flyctl storage create` (Tigris) |
+| `S3_BUCKET` | Fly secret | Bucket name — map from `BUCKET_NAME` that Tigris creates |
+| `S3_PATH` | `fly.toml [env]` | Key prefix inside the bucket (default `denokv/`) |
+| `S3_ENDPOINT` | `fly.toml [env]` | S3-compatible endpoint — pre-set to Tigris URL; remove for AWS S3 |
 | `SMTP_HOST` | Fly secret | SMTP server hostname |
 | `SMTP_PORT` | Fly secret | `587` (STARTTLS) or `465` (implicit TLS) |
 | `SMTP_USER` | Fly secret | SMTP login username |
 | `SMTP_PASSWORD` | Fly secret | SMTP password |
 | `SMTP_FROM` | Fly secret | Sender address in alert e-mails |
 | `ALERT_EMAIL` | Fly secret | Recipient for daily backup check report |
-| `DENOKV_ADDR` | optional | Override bind address (default `0.0.0.0:4512`) |
+| `DENOKV_ADDR` | optional env | Override bind address (default `0.0.0.0:4512`) |
 
 ---
 

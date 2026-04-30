@@ -19,7 +19,7 @@ cat > /etc/msmtprc <<MSMTP
 defaults
   auth           on
   tls            on
-  tls_starttls   on
+  tls_starttls   off
   tls_trust_file /etc/ssl/certs/ca-certificates.crt
   logfile        /dev/stderr
 
@@ -29,8 +29,6 @@ account        default
   from           ${SMTP_FROM}
   user           ${SMTP_USER}
   password       ${SMTP_PASSWORD}
-
-account default : default
 MSMTP
 chmod 600 /etc/msmtprc
 echo "[litestream_start] msmtprc rendered"
