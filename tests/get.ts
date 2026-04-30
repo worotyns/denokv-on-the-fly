@@ -6,4 +6,4 @@ const kv = await Deno.openKv("https://denokv-on-the-fly.fly.dev");
 console.log("Run app... (get op)");
 await kv.set(["test", "users", "alice"], { name: "Alice", joined: new Date() });
 const result = await kv.get(["test", "users", "alice"]);
-console.log(result)
+console.log(result);
