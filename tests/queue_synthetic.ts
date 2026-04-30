@@ -5,27 +5,37 @@ const kv = await Deno.openKv("https://denokv-on-the-fly.fly.dev");
 const queue = new KvQueue(kv);
 
 queue.handle("send-email", async (payload) => {
-  console.log("sending email", payload);
+    console.log("sending email", payload);
 });
 
 await queue.enqueue(
-  "send-email",
-  {
-    to: "john@example.com",
-    subject: "hello",
-  },
-  {
-    delayMs: 5000,
-  },
+    "send-email",
+    {
+        to: "john@example.com",
+        subject: "hello delayed",
+    },
+    {
+        delayMs: 5000,
+    },
 );
 
+setInterval(async () => {
+    await queue.enqueue(
+        "send-email",
+        {
+            to: "john@example.com",
+            subject: "hello",
+        },
+    );
+}, 1000);
+
 const runner = new KvQueueRunner(
-  kv,
-  queue,
+    kv,
+    queue,
 );
 
 await runner.run({
-  pollIntervalMs: 1000,
-  batchSize: 20,
-  lockTtlMs: 30_000,
+    pollIntervalMs: 1000,
+    batchSize: 20,
+    lockTtlMs: 30_000,
 });
